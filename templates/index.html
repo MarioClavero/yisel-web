@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yisel Web - Healthcare Documentation Automation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body class="light-theme" id="app-body">
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <i class="fas fa-stethoscope logo-icon"></i>
+                <div class="logo-text">
+                    <h1 id="welcome-text">Welcome to Yisel BOT</h1>
+                    <p id="author-text">by Mario Clavero</p>
+                </div>
+            </div>
+            <div class="header-controls">
+                <button id="theme-toggle" class="control-btn">
+                    <i class="fas fa-moon"></i>
+                    <span id="theme-text">Dark Mode</span>
+                </button>
+                <button id="language-toggle" class="control-btn">
+                    <i class="fas fa-language"></i>
+                    <span id="language-text">Español</span>
+                </button>
+                <div class="connection-status" id="connection-status">
+                    <i class="fas fa-circle status-indicator"></i>
+                    <span id="status-text">Detection Status: Unknown</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="navigation">
+        <div class="nav-content">
+            <button class="nav-btn active" data-view="dashboard">
+                <i class="fas fa-tachometer-alt"></i>
+                <span id="nav-dashboard">Dashboard</span>
+            </button>
+            <button class="nav-btn" data-view="accounts">
+                <i class="fas fa-users"></i>
+                <span id="nav-accounts">Accounts</span>
+            </button>
+            <button class="nav-btn" data-view="patients">
+                <i class="fas fa-user-injured"></i>
+                <span id="nav-patients">Patients</span>
+            </button>
+            <button class="nav-btn" data-view="tasks">
+                <i class="fas fa-tasks"></i>
+                <span id="nav-tasks">Tasks</span>
+            </button>
+            <button class="nav-btn" data-view="settings">
+                <i class="fas fa-cog"></i>
+                <span id="nav-settings">Settings</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard View -->
+        <div id="dashboard-view" class="view active">
+            <div class="view-header">
+                <h2>Dashboard</h2>
+                <div class="header-actions">
+                    <button id="refresh-dashboard" class="action-btn">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="tasks-today">0</h3>
+                        <p>Tasks Today</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-week"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="tasks-week">0</h3>
+                        <p>Tasks This Week</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-injured"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="total-patients">0</h3>
+                        <p>Total Patients</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="success-rate">95%</h3>
+                        <p>Success Rate</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-content">
+                <div class="dashboard-section">
+                    <h3>Browser Connection</h3>
+                    <div class="browser-controls">
+                        <button id="connect-browser" class="action-btn primary">
+                            <i class="fas fa-plug"></i>
+                            Connect Browser
+                        </button>
+                        <button id="reconnect-browser" class="action-btn">
+                            <i class="fas fa-redo"></i>
+                            Reconnect
+                        </button>
+                        <div class="browser-status" id="browser-status">
+                            <i class="fas fa-circle status-indicator"></i>
+                            <span>Checking connection...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-section">
+                    <h3>Quick Actions</h3>
+                    <div class="quick-actions">
+                        <button class="action-btn" id="fetch-patients">
+                            <i class="fas fa-download"></i>
+                            Fetch Patients
+                        </button>
+                        <button class="action-btn" id="view-tasks">
+                            <i class="fas fa-list"></i>
+                            View Tasks
+                        </button>
+                        <button class="action-btn" id="manage-accounts">
+                            <i class="fas fa-user-cog"></i>
+                            Manage Accounts
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accounts View -->
+        <div id="accounts-view" class="view">
+            <div class="view-header">
+                <h2>Account Management</h2>
+                <div class="header-actions">
+                    <button id="add-account" class="action-btn primary">
+                        <i class="fas fa-plus"></i>
+                        Add Account
+                    </button>
+                </div>
+            </div>
+            
+            <div class="accounts-container">
+                <div class="account-form" id="account-form" style="display: none;">
+                    <h3 id="form-title">Add New Account</h3>
+                    <form id="account-form-element">
+                        <div class="form-group">
+                            <label for="nickname">Nickname:</label>
+                            <input type="text" id="nickname" name="nickname" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="username">Username:</label>
+                            <input type="text" id="username" name="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password:</label>
+                            <input type="password" id="password" name="password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="notification-topic">Notification Topic:</label>
+                            <input type="text" id="notification-topic" name="notification_topic">
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="enable-notifications" name="enable_notifications">
+                                Enable Notifications
+                            </label>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="action-btn primary">Save</button>
+                            <button type="button" id="cancel-account" class="action-btn">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="accounts-list" id="accounts-list">
+                    <!-- Accounts will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Patients View -->
+        <div id="patients-view" class="view">
+            <div class="view-header">
+                <h2>Patient Management</h2>
+                <div class="header-actions">
+                    <button id="refresh-patients" class="action-btn">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+            
+            <div class="patients-container">
+                <div class="patients-list" id="patients-list">
+                    <!-- Patients will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks View -->
+        <div id="tasks-view" class="view">
+            <div class="view-header">
+                <h2>Task Management</h2>
+                <div class="header-actions">
+                    <button id="refresh-tasks" class="action-btn">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+            
+            <div class="tasks-container">
+                <div class="tasks-list" id="tasks-list">
+                    <!-- Tasks will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings View -->
+        <div id="settings-view" class="view">
+            <div class="view-header">
+                <h2>Settings</h2>
+            </div>
+            
+            <div class="settings-container">
+                <div class="settings-section">
+                    <h3>Application Settings</h3>
+                    <div class="setting-item">
+                        <label>Auto Re-Open Browser:</label>
+                        <button id="auto-reopen-toggle" class="toggle-btn">OFF</button>
+                    </div>
+                    <div class="setting-item">
+                        <label>Low Battery Threshold:</label>
+                        <input type="number" id="battery-threshold" value="20" min="5" max="50">
+                        <span>%</span>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>Appearance</h3>
+                    <div class="setting-item">
+                        <label>Theme:</label>
+                        <select id="theme-select">
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label>Language:</label>
+                        <select id="language-select">
+                            <option value="en">English</option>
+                            <option value="es">Español</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Notification Container -->
+    <div id="notifications" class="notifications-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="modal-overlay" class="modal-overlay" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modal-title">Modal Title</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Modal content will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
